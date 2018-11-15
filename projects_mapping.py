@@ -132,7 +132,7 @@ def map(project):
         try:
           val = dpath.util.get(project, source_key)
         except KeyError:
-          print("key %s is missing.  Defaulting to Null" % source_key)
+          # logger.debug("key %s is missing.  Defaulting to Null" % source_key)
           val = None
 
         if callable(custom_map):

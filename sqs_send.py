@@ -16,7 +16,7 @@ def send_message(message, queue_name):
 
     message_body = json.dumps(message)
 
-    print("Sending to queue %s: \n%s" % (queue.url, message_body))
+    # print("Sending to queue %s: \n%s" % (queue.url, message_body))
 
     return queue.send_message(
         MessageBody=message_body

@@ -6,45 +6,52 @@ from boto3.dynamodb.conditions import Key, Attr
 from datetime import datetime, date, timedelta
 from dateutil import parser
 
+import logging
+logger = logging.getLogger()
+logger.setLevel(os.getenv('LOGGING_LEVEL', 'DEBUG'))
+
 if os.environ.get('IS_LOCAL') == 'true' or __name__ == '__main__':
-    print("using local Dynamo access")
+    logger.info("using local Dynamo access")
     session = boto3.session.Session(profile_name='mammothgrowth')
     db = session.resource('dynamodb')
-    projects_table_name = "artifact-uprising-projects-dev"
+    projects_table_name = "artifact-uprising-projects-2-dev"
 
 else:
-    print("using execution context for Dynamo access")
+    logger.info("using execution context for Dynamo access")
     db = boto3.resource('dynamodb')
 
     projects_table_name = os.environ.get('dynamo_table_projects')
+
 projects_table = db.Table(projects_table_name)
 
-def get_projects(last_project_id, limit):
-
-    if last_project_id:
-    
-        ke = Key('project_id').gt(last_project_id)
-
-        response = projects_table.query(
-            KeyConditionExpression=ke,
-            Limit=limit
-        )
-
-    else:
+def get_projects(limit):
+        
         response = projects_table.scan(
             Limit=limit
         )
 
-    all_projects = response['Items']
+        response = projects_table.scan()
 
-    return all_projects
+        yield response['Items']
+
+        while 'LastEvaluatedKey' in response:
+            response = projects_table.scan(
+                Limit=limit,
+                ExclusiveStartKey=response['LastEvaluatedKey']
+                )
+
+            yield response['Items']
+
 
 if __name__ == "__main__":
-    projects = get_projects(None, 10)
+    
+    for projects in get_projects(2):
+        for project in projects:
+            print(project['projectId'])
 
-    if projects and len(projects) > 0:
+    # if projects and len(projects) > 0:
 
-        print("%s projects returned" % len(projects))
-        print("last project_id: %s" % projects[-1]["project_id"])
-    else:
-        print("no projects returned")
+    #     print("%s projects returned" % len(projects))
+    #     print("last projectId: %s" % projects[-1]["projectId"])
+    # else:
+    #     print("no projects returned")
