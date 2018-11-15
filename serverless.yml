@@ -1,0 +1,181 @@
+
+plugins:
+  - serverless-python-requirements
+
+service: artifactUprisingDynamoSync # NOTE: update this with your service name
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+# frameworkVersion: "=X.X.X"
+
+provider:
+  name: aws
+  runtime: python3.6
+  stage: dev
+  region: us-west-2
+  profile: mammothgrowth
+  timeout: 300
+  environment:
+    dynamo_table_projects: ${self:custom.tableNames.projects}
+    redshift_url: artifact-2.cf5wz3dozczr.us-west-2.redshift.amazonaws.com
+    redshift_port: "5439"
+    redshift_user: temp_dynamo_sync
+    # redshift_password: 7EHYr1xlzcIF
+    redshift_database: artifact_uprising
+    redshift_cluster: artifact-2
+    redshift_table_projects: artifact_uprising.project_data
+    sqs_queue_projects: DynamoRedshiftSyncQueue
+
+# you can add statements to the Lambda function's IAM Role here
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "sqs:SendMessage"
+        - "sqs:GetQueueUrl"
+      Resource: "arn:aws:sqs:us-west-2:240013347679:DynamoRedshiftSyncQueue"
+    - Effect: "Allow"
+      Action:
+        - "redshift:GetClusterCredentials"
+        - "redshift:DescribeClusters"
+        - "redshift:CreateClusterUser"        
+        - "redshift:JoinGroup"
+      Resource: "arn:aws:redshift:us-west-2:240013347679:dbuser:*/temp_*"
+    - Effect: "Allow"
+      Action:
+        - "redshift:GetClusterCredentials"
+        - "redshift:DescribeClusters"
+        - "redshift:CreateClusterUser"        
+        - "redshift:JoinGroup"
+      Resource: "arn:aws:redshift:us-west-2:240013347679:dbname:*/*"
+
+
+# you can define service wide environment variables here
+#  environment:
+#    variable1: value1
+
+# you can add packaging information here
+#package:
+#  include:
+#    - include-me.py
+#    - include-me-dir/**
+#  exclude:
+#    - exclude-me.py
+#    - exclude-me-dir/**
+
+functions:
+  dynamoProjectsSubscriber:
+    handler: lambda_dynamo_subscriber.handle
+    events:
+      - stream:
+          type: dynamodb 
+          # arn: ${self:custom.dynamoStreams.projects}
+          arn:
+            Fn::GetAtt:
+              - ProjectsDynamoTable
+              - StreamArn
+
+  projectsRedshiftSync:
+    handler: lambda_redshift_update.handle
+    reservedConcurrency: 1
+    events: 
+    	# Provide the ARN of your queue
+      - sqs: 
+          batchSize: 10
+          arn:
+            Fn::GetAtt:
+              - RedshiftSyncSQS
+              - Arn
+    vpc:
+      securityGroupIds:
+        - sg-055faf05648def1d9
+      subnetIds:
+        - subnet-0444e9eb1caa17313
+        # - subnet-03ac12c2cd581bf8e        
+      
+#    The following are a few example events you can configure
+#    NOTE: Please make sure to change your handler code to work with those events
+#    Check the event documentation for details
+#    events:
+#      - http:
+#          path: users/create
+#          method: get
+#      - s3: ${env:BUCKET}
+#      - schedule: rate(10 minutes)
+#      - sns: greeter-topic
+#      - stream: arn:aws:dynamodb:region:XXXXXX:table/foo/stream/1970-01-01T00:00:00.000
+#      - alexaSkill: amzn1.ask.skill.xx-xx-xx-xx
+#      - alexaSmartHome: amzn1.ask.skill.xx-xx-xx-xx
+#      - iot:
+#          sql: "SELECT * FROM 'some_topic'"
+#      - cloudwatchEvent:
+#          event:
+#            source:
+#              - "aws.ec2"
+#            detail-type:
+#              - "EC2 Instance State-change Notification"
+#            detail:
+#              state:
+#                - pending
+#      - cloudwatchLog: '/aws/lambda/hello'
+#      - cognitoUserPool:
+#          pool: MyUserPool
+#          trigger: PreSignUp
+
+#    Define function environment variables here
+#    environment:
+#      variable2: value2
+
+# you can add CloudFormation resource templates here
+resources:
+ Resources:
+    RedshiftSyncSQS:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: "DynamoRedshiftSyncQueue"
+        RedrivePolicy:
+          deadLetterTargetArn:
+            Fn::GetAtt:
+            - RedshiftSyncSQSDeadLetter
+            - Arn
+          maxReceiveCount: 3
+
+    RedshiftSyncSQSDeadLetter:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: "DynamoRedshiftSyncQueueDeadLetter"
+
+    ProjectsDynamoTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName:  ${self:custom.tableNames.projects}
+        AttributeDefinitions:
+          - AttributeName: projectId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: projectId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES    # RedshiftCluster:
+    #   Type: AWS::Redshift::Cluster
+
+custom:
+  dynamoStreams:
+    # projects: arn:aws:dynamodb:${self:provider.region}::table/${self:custom.tableNames.projects}/stream/1901T00:00:00.000
+    # projects: arn:aws:dynamodb:us-west-2:240013347679:table/artifact-uprising-projects-dev/stream/2018-11-13T18:57:21.020
+    projects:
+        Fn::GetAtt:
+          - ProjectsDynamoTable
+          - StreamArn
+  tableNames:
+    projects: artifact-uprising-projects-2-${self:provider.stage}
+  redshiftData:
+    cluster: url
+    schema: artifact_uprising
+    tableName: project_data
+    user_name: username
+    password: pwd
+  pythonRequirements:
+    dockerizePip: true

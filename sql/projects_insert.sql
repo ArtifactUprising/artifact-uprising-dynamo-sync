@@ -1,0 +1,39 @@
+INSERT INTO data_warehouse.project_data
+(project_id
+,created_at
+,modified_at
+,state
+,marked_for_deletion
+,flash_id
+,admin_edit_date
+,admin_editor
+,source_project_id
+,customer_id
+,sku
+,page_count
+,photo_boxes
+,photo_boxes_complete
+,gallery_images_uploaded
+,product_attributes
+,price
+)
+VALUES
+( %(project_id)s
+  ,%(created_at)s
+  ,%(modified_at)s
+  ,%(state)s
+  ,%(marked_for_deletion)s
+  ,%(flash_id)s
+  ,%(admin_edit_date)s
+  ,%(admin_editor)s
+  ,%(source_project_id)s
+  ,%(customer_id)s
+  ,%(sku)s
+  ,%(page_count)s
+  ,%(photo_boxes)s
+  ,%(photo_boxes_complete)s
+  ,%(gallery_images_uploaded)s
+  ,%(product_attributes)s
+  ,%(price)s
+)
+;

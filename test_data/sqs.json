@@ -1,0 +1,20 @@
+{
+    "Records": [
+        {
+            "messageId": "4260015b-12f8-4f49-b185-0b1280106214",
+            "receiptHandle": "AQEBY0pExkSwwLx9f0HciS7PGejlkQybWhurUtsRZTK/smb6x9FaTNh3EDOtfbKbW+DAMVa9HtRi1TR/w9GpD5g3NhuM2WNklS1uEh0SkMlk8U108JSmOqJSJHJAYpiLVzAnCilPYqPC5m8tQrbXMgP3nw21Y4IpDeqqWUmSENnWXqfaX1CBLODsb810bia2JaQ5zqccFn5n7ZFgkSOTURdIQAvvIlwXCGQFImyMGjTe7VC7EQJd43c23X99Zs0TWXeapodleAKC0gFWy95tYGT4jviVVjc/TU2thhkf3SUNk/OmC5eEQ1yhdWt8LQ9SsWZsFsMpTLxE/AHmt/IOZa6XuVGJ5hsWIzC9QhtQ8x2PoZPlHkU9oVcRTLK4eGEoJdMPZ31Y6xnStgOy2RlmccR3YA==",
+            "body": "{\"project_id\": \"f3e940f5-a4c9-4763-9730-135fbae65006\", \"created_at\": 1542145514235, \"modified_at\": 1542145527744, \"state\": \"IN_PROGRESS\", \"marked_for_deletion\": false, \"flash_id\": \"65bac763-cc73-48ad-8378-3acbcb9b48b7\", \"admin_edit_date\": null, \"admin_editor\": null, \"source_project_id\": null, \"customer_id\": 992155, \"sku\": \"SOF1\", \"gallery_images_uploaded\": 0, \"product_attributes\": {\"design\": \"sofdesign1\", \"softcover_book_size\": \"5x5\"}, \"price\": \"$15.00\", \"page_count\": 33, \"photo_boxes\": 39, \"photo_boxes_complete\": 0}",
+            "attributes": {
+                "ApproximateReceiveCount": "1",
+                "SentTimestamp": "1542224942461",
+                "SenderId": "AROAJMEHHE7QIBZN3XIPS:artifactUprisingDynamoSync-dev-dynamoProjectsSubscriber",
+                "ApproximateFirstReceiveTimestamp": "1542224942493"
+            },
+            "messageAttributes": {},
+            "md5OfBody": "9f3e508452890be6ae7d05eb37745d5d",
+            "eventSource": "aws:sqs",
+            "eventSourceARN": "arn:aws:sqs:us-west-2:240013347679:DynamoRedshiftSyncQueue",
+            "awsRegion": "us-west-2"
+        }
+    ]
+}
