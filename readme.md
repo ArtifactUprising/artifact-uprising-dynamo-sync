@@ -24,9 +24,3 @@ Download from https://github.com/jkehler/awslambda-psycopg2
 * sls deploy
 
 ## Dev Env
-
-### Redshift
-
-cluster:
-user: awsuser
-pwd: 7EHYr1xlzcIF
