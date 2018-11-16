@@ -1,3 +1,10 @@
+## Docs
+### Original Spec Doc
+https://docs.google.com/document/d/1u-K2Tw8BbMSmIKrvUf2FL28-txd1y1gtyj0WNiHEtPU/edit?ts=5be9d519#
+
+### Detailed Implementation Doc
+https://docs.google.com/document/d/1UguCDXLQa8C3QmdBhd1veqz-zEM_L52uXqfyxm3JVCk/edit#heading=h.7p9acygja0x
+
 ## Requirements
 
 * Python 3.6
@@ -67,7 +74,6 @@ Update to the correct DynamoDB table that contains the projects data.
     handler: lambda_redshift_update.handle
     reservedConcurrency: 1
     events: 
-    	# Provide the ARN of your queue
       - sqs: 
           batchSize: 10
           arn:
