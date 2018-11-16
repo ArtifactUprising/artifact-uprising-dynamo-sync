@@ -86,45 +86,11 @@ functions:
               - RedshiftSyncSQS
               - Arn
     vpc:
-      securityGroupIds:
+      securityGroupIds:        
         - sg-055faf05648def1d9
       subnetIds:
         - subnet-0444e9eb1caa17313
-        # - subnet-03ac12c2cd581bf8e        
       
-#    The following are a few example events you can configure
-#    NOTE: Please make sure to change your handler code to work with those events
-#    Check the event documentation for details
-#    events:
-#      - http:
-#          path: users/create
-#          method: get
-#      - s3: ${env:BUCKET}
-#      - schedule: rate(10 minutes)
-#      - sns: greeter-topic
-#      - stream: arn:aws:dynamodb:region:XXXXXX:table/foo/stream/1970-01-01T00:00:00.000
-#      - alexaSkill: amzn1.ask.skill.xx-xx-xx-xx
-#      - alexaSmartHome: amzn1.ask.skill.xx-xx-xx-xx
-#      - iot:
-#          sql: "SELECT * FROM 'some_topic'"
-#      - cloudwatchEvent:
-#          event:
-#            source:
-#              - "aws.ec2"
-#            detail-type:
-#              - "EC2 Instance State-change Notification"
-#            detail:
-#              state:
-#                - pending
-#      - cloudwatchLog: '/aws/lambda/hello'
-#      - cognitoUserPool:
-#          pool: MyUserPool
-#          trigger: PreSignUp
-
-#    Define function environment variables here
-#    environment:
-#      variable2: value2
-
 # you can add CloudFormation resource templates here
 resources:
  Resources:
@@ -162,20 +128,7 @@ resources:
     #   Type: AWS::Redshift::Cluster
 
 custom:
-  dynamoStreams:
-    # projects: arn:aws:dynamodb:${self:provider.region}::table/${self:custom.tableNames.projects}/stream/1901T00:00:00.000
-    # projects: arn:aws:dynamodb:us-west-2:240013347679:table/artifact-uprising-projects-dev/stream/2018-11-13T18:57:21.020
-    projects:
-        Fn::GetAtt:
-          - ProjectsDynamoTable
-          - StreamArn
   tableNames:
     projects: artifact-uprising-projects-2-${self:provider.stage}
-  redshiftData:
-    cluster: url
-    schema: artifact_uprising
-    tableName: project_data
-    user_name: username
-    password: pwd
   pythonRequirements:
     dockerizePip: true
