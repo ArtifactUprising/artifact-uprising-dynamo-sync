@@ -16,5 +16,9 @@ var/
 .installed.cfg
 *.egg
 .vscode/
+venv/
+node_modules/
+__pycache__/
+
 # Serverless directories
 .serverless

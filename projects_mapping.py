@@ -115,7 +115,8 @@ def flatten_dynamo_document(document):
         elif 'S' in child:
             val = child['S']
         else:
-            raise Exception('Unsupported doucument type in %s' % child)
+          continue
+          # raise Exception('Unsupported doucument type in %s' % child)
 
         if key == 'projectBinaryData' and val:
             val = decode_project_binary(val)
