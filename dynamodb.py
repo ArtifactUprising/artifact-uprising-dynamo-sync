@@ -1,3 +1,10 @@
+"""
+    Encapsulates fetching Artifact Uprsing project files from DynamoDB
+    Created for Artifact Uprising
+      by: Drew Beaupre - drew@mammothgrowth.com
+          Copyright 2018, Mammoth Growth
+"""
+
 import boto3
 import simplejson as json
 import os
@@ -5,8 +12,8 @@ import decimal
 from boto3.dynamodb.conditions import Key, Attr
 from datetime import datetime, date, timedelta
 from dateutil import parser
-
 import logging
+
 logger = logging.getLogger()
 logger.setLevel(os.getenv('LOGGING_LEVEL', 'DEBUG'))
 

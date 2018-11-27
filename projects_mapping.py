@@ -1,3 +1,15 @@
+"""
+    encapsulates rules for flattening and mapping DynamoDB document.  
+        Custom mappings
+        Update `keys` to alter mapping.
+        Keys output should match replacement pattern in SQL files
+        Flattens DynamoDB stream upate format into standard JSON doc format
+
+    Created for Artifact Uprising
+      by: Drew Beaupre - drew@mammothgrowth.com
+          Copyright 2018, Mammoth Growth
+"""
+
 import dpath.util
 import gzip
 import io

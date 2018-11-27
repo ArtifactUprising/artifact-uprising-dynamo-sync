@@ -1,3 +1,14 @@
+"""
+    manual backfill script.  
+        enumerates through every DynamoDB document
+        maps document into redshift update
+        queues update onto SQS
+
+    Created for Artifact Uprising
+      by: Drew Beaupre - drew@mammothgrowth.com
+          Copyright 2018, Mammoth Growth
+"""
+
 import os
 if __name__ == '__main__':
     os.environ['IS_LOCAL'] = 'true'

@@ -1,3 +1,15 @@
+"""
+    Lambda handler / entry point.  
+        Extracts DynamoDB stream events; 
+        flattens document; 
+        maps document into data necessary for Redshift update
+        posts document onto SQS queue
+
+    Created for Artifact Uprising
+      by: Drew Beaupre - drew@mammothgrowth.com
+          Copyright 2018, Mammoth Growth
+"""
+
 import json
 import logging
 import os

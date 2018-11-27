@@ -1,3 +1,14 @@
+"""
+    encapsulates logic for updating specific Redshift table.  
+        opens DB connection
+        checks for existence
+        performs upsert
+
+    Created for Artifact Uprising
+      by: Drew Beaupre - drew@mammothgrowth.com
+          Copyright 2018, Mammoth Growth
+"""
+
 import redshift as db
 import sys
 import os

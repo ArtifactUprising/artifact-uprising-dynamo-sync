@@ -1,3 +1,14 @@
+"""
+    Lambda handler / entry point.  
+        Subscribes to SQS messgaes 
+        extracts update
+        passes update to projects_database module
+
+    Created for Artifact Uprising
+      by: Drew Beaupre - drew@mammothgrowth.com
+          Copyright 2018, Mammoth Growth
+"""
+
 import json
 import logging
 import os

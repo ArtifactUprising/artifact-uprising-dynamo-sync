@@ -1,4 +1,16 @@
 #!/usr/bin/python3
+
+"""
+    encapsulates raw Redshift connection/execution.  
+        IAM role based authentication
+        Execute raw SQL or local SQL file.
+        pattern/replace SQL with input
+
+    Created for Artifact Uprising
+      by: Drew Beaupre - drew@mammothgrowth.com
+          Copyright 2018, Mammoth Growth
+"""
+
 import psycopg2
 import boto3
 import os

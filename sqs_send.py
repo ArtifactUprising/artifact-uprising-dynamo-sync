@@ -1,6 +1,15 @@
+"""
+    encapsulates SQS message posting.  
+
+    Created for Artifact Uprising
+      by: Drew Beaupre - drew@mammothgrowth.com
+          Copyright 2018, Mammoth Growth
+"""
+
 import boto3
 import simplejson as json
 import os
+
 
 if os.environ.get('IS_LOCAL') == 'true':
     print("using local SQS access")
