@@ -13,6 +13,7 @@ import json
 import logging
 import os
 import projects_database as db
+import base64
 
 logger = logging.getLogger()
 logger.setLevel(os.getenv('LOGGING_LEVEL', 'DEBUG'))
@@ -24,11 +25,24 @@ cluster = os.getenv('redshift_cluster', None)
 port = os.getenv('redshift_port')
 endpoint = os.getenv('redshift_url')
 
+
+def parse_record(record):
+
+    # SQS record
+    if 'body' in record:
+        return json.loads(record['body'])
+    # Kinesis record
+    elif 'kinesis' in record:
+        data = base64.b64decode(record['kinesis']['data'])
+        return json.loads(data)
+    else:
+        return None
+
 def get_records(event):
 
     records = event['Records']
-    
-    return [json.loads(i['body']) for i in records]
+     
+    return [parse_record(i) for i in records]
 
 
 def handle(event, context):
@@ -39,10 +53,27 @@ def handle(event, context):
 
     logger.debug("decoded %s records" % len(records))
 
-    for record in records:
-        logger.debug("updating: %s", json.dumps(record))
-        update_record(record)
+    projectids = [i['project_id'] for i in records]
+    logger.info("processing projects: %s" % projectids)
 
+    update_batch(records)
+    # for record in records:
+    #     logger.debug("updating: %s", json.dumps(record))
+    #     update_record(record)
+
+def update_batch(records):
+    conn = None
+
+    try:
+        conn = db.open_database(user, pwd, database, cluster, port, endpoint)
+
+        logger.debug("perfrming batch update.")
+        db.sync_batch(conn, records)
+
+    finally:
+        if conn:
+            db.close_database(conn)
+    
 
 def update_record(record):
     conn = None

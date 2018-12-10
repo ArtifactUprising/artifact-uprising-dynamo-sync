@@ -14,18 +14,18 @@ if __name__ == '__main__':
     os.environ['IS_LOCAL'] = 'true'
 import dynamodb
 import projects_mapping as mapper
-import sqs_send as sqs
+import kinesis_send as kinesis
 import logging
 logger = logging.getLogger()
 logger.setLevel(os.getenv('LOGGING_LEVEL', 'INFO'))
 
-sqs_queue = os.getenv('sqs_queue_projects', 'DynamoRedshiftSyncQueue')
+kinesis_queue = os.getenv('kinesis_queue_projects', 'ProjectsDynamoDBRedshiftSync')
 
 limit = 1
 
 def map(record):
 
-    return mapper.map(record)
+    return mapper.map(record, True)
 
 def backfill():
 
@@ -34,11 +34,14 @@ def backfill():
     for records in dynamodb.get_projects(limit):
 
         for mapped in [map(record) for record in records]:
-            print("sending: %s" % mapped['project_id'])
-            sent.append(mapped['project_id'])
-            sqs.send_message(mapped, sqs_queue)
+            # for i in [0,1,2,3,4]:
 
-    print("sent: %s" % sent)
+            project_id = mapped['project_id']
+            print("sending: %s" % mapped)
+            sent.append(project_id)
+            kinesis.send_message(mapped, kinesis_queue, project_id)
+
+
 
 if __name__ == '__main__':
 

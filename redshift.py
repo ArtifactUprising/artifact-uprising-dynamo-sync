@@ -12,8 +12,14 @@
 """
 
 import psycopg2
+from psycopg2.extras import execute_values
 import boto3
 import os
+import simplejson as json
+import logging
+
+logger = logging.getLogger()
+logger.setLevel(os.getenv('LOGGING_LEVEL', 'DEBUG'))
 
 if os.environ.get('IS_LOCAL') == 'true' or __name__ == '__main__':
     print("using local Redshift access")
@@ -48,10 +54,39 @@ def execute(conn, sql, query_params, returnvalue=False):
     except (Exception, psycopg2.DatabaseError) as error:
         raise error
 
+def execute_batch(conn, sql, argslist, row_template, page_size):
+    """ Connect to the PostgreSQL database server """
+
+    try:
+        # create a cursor
+        cur = conn.cursor()
+
+        thesql = sql
+        print("Executing SQL")
+        # print(thesql)
+        
+        # execute a statement
+        execute_values(cur, sql, argslist, row_template, page_size)
+
+        cur.close()
+        pass
+
+    except (Exception, psycopg2.DatabaseError) as error:
+        raise error
+
+
 def execute_path(conn, sql_path, query_params, returnvalue=False):
     with open(sql_path, 'r') as sql_file:
       etl_sql = sql_file.read()
       return execute(conn, etl_sql, query_params, returnvalue)
+
+def execute_batch_path(conn, sql_path, argslist, row_template, page_size=100):
+    with open(sql_path, 'r') as sql_file:
+      etl_sql = sql_file.read()
+      return execute_batch(conn, etl_sql, argslist, row_template, page_size)
+
+
+        
 
 def open_connection_secure(user, database, cluster, port, endpoint):
     print("client: %s" % client)

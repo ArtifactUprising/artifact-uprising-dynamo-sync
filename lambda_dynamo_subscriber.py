@@ -14,12 +14,12 @@ import json
 import logging
 import os
 import projects_mapping as mapper
-import sqs_send as sqs
+import kinesis_send as kinesis
 
 logger = logging.getLogger()
 logger.setLevel(os.getenv('LOGGING_LEVEL', 'DEBUG'))
 
-sqs_queue = os.getenv('sqs_queue_projects', 'DynamoRedshiftSyncQueue')
+kinesis_queue = os.getenv('kinesis_queue_projects', 'ProjectsDynamoDBRedshiftSync')
 
 def get_records(event):
 
@@ -41,8 +41,9 @@ def handle(event, context):
 
     sent = []
     for message in filter(lambda x: x['project_id'], mapped):
-        sqs.send_message(message, sqs_queue)
-        sent.append(message['project_id'])
+        project_id = message['project_id']
+        kinesis.send_message(message, kinesis_queue, project_id)
+        sent.append(project_id)
 
     response = {
         "statusCode": 200,

@@ -14,7 +14,7 @@ provider:
   stage: dev
   region: us-west-2
   profile: mammothgrowth
-  timeout: 300
+  timeout: 300 #Default all functions to max timeout
   environment:
     dynamo_table_projects: ${self:custom.tableNames.projects}
     redshift_url: artifact-2.cf5wz3dozczr.us-west-2.redshift.amazonaws.com
@@ -25,6 +25,8 @@ provider:
     redshift_cluster: artifact-2
     redshift_table_projects: artifact_uprising.project_data
     sqs_queue_projects: DynamoRedshiftSyncQueue
+    kinesis_queue_projects: ProjectsDynamoDBRedshiftSync
+    batch_size: ${self:custom.kinesis.batchSize}
 
 # you can add statements to the Lambda function's IAM Role here
   iamRoleStatements:
@@ -33,6 +35,24 @@ provider:
         - "sqs:SendMessage"
         - "sqs:GetQueueUrl"
       Resource: "arn:aws:sqs:us-west-2:240013347679:DynamoRedshiftSyncQueue"
+    - Effect: "Allow"
+      Action:
+        - "sqs:SendMessage"
+        - "sqs:GetQueueUrl"
+      Resource: "arn:aws:sqs:us-west-2:240013347679:ProjectsRedshiftSyncDeadLetter"
+    - Effect: "Allow"
+      Action:
+        - "sns:Publish"
+      Resource: 
+        Ref: RedshiftSyncSQSDeadLetterSNS
+    - Effect: "Allow"
+      Action:
+        - "kinesis:PutRecord"
+        - "kinesis:PutRecorda"
+      Resource: 
+        Fn::GetAtt:
+          - RedshiftSyncKinesisStream
+          - Arn    	
     - Effect: "Allow"
       Action:
         - "redshift:GetClusterCredentials"
@@ -78,13 +98,24 @@ functions:
     handler: lambda_redshift_update.handle
     reservedConcurrency: 1
     events: 
-    	# Provide the ARN of your queue
-      - sqs: 
-          batchSize: 10
+      - stream:
+          type: kinesis
+          batchSize: ${self:custom.kinesis.batchSize}
+          startingPosition: LATEST
+          enabled: true
           arn:
             Fn::GetAtt:
-              - RedshiftSyncSQS
-              - Arn
+              - RedshiftSyncKinesisStream
+              - Arn    	
+      # - sqs: 
+      #     batchSize: 10
+      #     arn:
+      #       Fn::GetAtt:
+      #         - RedshiftSyncSQS
+      #         - Arn
+
+    onError: 
+      Ref: RedshiftSyncSQSDeadLetterSNS
     vpc:
       securityGroupIds:        
         - sg-055faf05648def1d9
@@ -94,6 +125,34 @@ functions:
 # you can add CloudFormation resource templates here
 resources:
  Resources:
+
+  # Mapped update to process in Redshift
+    RedshiftSyncKinesisStream:
+      Type: "AWS::Kinesis::Stream"
+      Properties:
+        Name: ProjectsDynamoDBRedshiftSync
+        ShardCount: 1 #Shard count controls the concurrency of the Lambda.  1 Shard = 1 Lambda instance
+        RetentionPeriodHours: 168  #retain for 1 week
+    
+  # DLQ for Lambda that processes Redshift Updates.  This goes via SNS
+    ProjectsRedshiftSyncDeadLetter:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: "ProjectsRedshiftSyncDeadLetter"
+
+  # SNS topic for Lambda to send dead items to
+    RedshiftSyncSQSDeadLetterSNS:
+      Type: "AWS::SNS::Topic"
+      Properties:
+        Subscription:
+          -
+            Endpoint: 
+                Fn::GetAtt:
+                - ProjectsRedshiftSyncDeadLetter
+                - Arn
+            Protocol: sqs
+
+    #  Depricated
     RedshiftSyncSQS:
       Type: "AWS::SQS::Queue"
       Properties:
@@ -105,6 +164,7 @@ resources:
             - Arn
           maxReceiveCount: 3
 
+    # Depricated
     RedshiftSyncSQSDeadLetter:
       Type: "AWS::SQS::Queue"
       Properties:
@@ -132,3 +192,5 @@ custom:
     projects: artifact-uprising-projects-2-${self:provider.stage}
   pythonRequirements:
     dockerizePip: true
+  kinesis:
+    batchSize: 100

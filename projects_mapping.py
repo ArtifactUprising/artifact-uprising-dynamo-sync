@@ -18,6 +18,7 @@ import base64
 import simplejson as json
 from datetime import datetime
 import re
+# from boto3.dynamodb.types import TypeDeserializer
   
 def strip_currency(value):
   if not value:
@@ -115,6 +116,8 @@ def decode_project_binary(gz_data):
     return json.loads(data)
 
 def flatten_dynamo_document(document):
+  
+
     mapped = {}
     # iterate through document and reduce nested data types
     for key, child in document.items():
@@ -137,12 +140,16 @@ def flatten_dynamo_document(document):
     
     return mapped
 
-def map(project):
+def map(project, decodeBinary=False):
     mapped = {}
+
+    if decodeBinary and project['projectBinaryData']:
+      project['projectBinaryData'] = decode_project_binary(project['projectBinaryData'])
 
     for source_key, target_key, custom_map in keys:
         
         try:
+
           val = dpath.util.get(project, source_key)
         except KeyError:
           # logger.debug("key %s is missing.  Defaulting to Null" % source_key)
