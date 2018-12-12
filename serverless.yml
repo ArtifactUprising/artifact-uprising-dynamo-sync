@@ -25,7 +25,7 @@ provider:
     redshift_cluster: artifact-2
     redshift_table_projects: artifact_uprising.project_data
     sqs_queue_projects: DynamoRedshiftSyncQueue
-    kinesis_queue_projects: ProjectsDynamoDBRedshiftSync
+    kinesis_queue_projects: ${self:custom.kinesis.redshiftSyncStreamName}
     batch_size: ${self:custom.kinesis.batchSize}
     redshiftSyncDLQName: ${self:custom.kinesis.redshiftSyncDLQName}
 
@@ -122,8 +122,21 @@ functions:
         - sg-055faf05648def1d9
       subnetIds:
         - subnet-0444e9eb1caa17313
-      
-# you can add CloudFormation resource templates here
+
+        
+  projectsRedshiftSyncDLQDrain1:
+    handler: lambda_dlq1_drain.handle
+    reservedConcurrency: 10
+    timeout: 30
+    events: 
+      - sqs: 
+          batchSize: 10
+          arn:
+            Fn::GetAtt:
+              - RedshiftSyncSQSDeadLetter
+              - Arn
+
+
 resources:
  Resources:
 
@@ -131,7 +144,7 @@ resources:
     RedshiftSyncKinesisStream:
       Type: "AWS::Kinesis::Stream"
       Properties:
-        Name: ProjectsDynamoDBRedshiftSync
+        Name: ${self:custom.kinesis.redshiftSyncStreamName}
         ShardCount: 1 #Shard count controls the concurrency of the Lambda.  1 Shard = 1 Lambda instance
         RetentionPeriodHours: 168  #retain for 1 week
     
@@ -194,5 +207,6 @@ custom:
   pythonRequirements:
     dockerizePip: true
   kinesis:
+    redshiftSyncStreamName: ProjectsDynamoDBRedshiftSync
     batchSize: 100
     redshiftSyncDLQName: DynamoRedshiftSyncQueueDeadLetter

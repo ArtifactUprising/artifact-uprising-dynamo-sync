@@ -78,12 +78,15 @@ def array_count(data):
   else:
     return 0
 
+def str2bool(v):
+  return str(v).lower() in ("yes", "true", "t", "1") if isinstance(v, str) else v
+
 keys = [
     ("projectId","project_id", None),
     ("createdAt","created_at", timestamp_to_datetime),
     ("modifiedAt","modified_at", timestamp_to_datetime),
     ("state","state", None),
-    ("markedForDeletion","marked_for_deletion", None),
+    ("markedForDeletion","marked_for_deletion", str2bool),
     ("user","flash_id", None),
     ("adminEditDate", "admin_edit_date", None),
     ("adminEditor","admin_editor", None),
