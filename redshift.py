@@ -62,9 +62,9 @@ def execute_batch(conn, sql, argslist, row_template, page_size):
         cur = conn.cursor()
 
         thesql = sql
-        print("Executing SQL")
+        logger.debug("Executing SQL")
         # print(thesql)
-        
+        # print("argslist: %s" % argslist)
         # execute a statement
         execute_values(cur, sql, argslist, row_template, page_size)
 

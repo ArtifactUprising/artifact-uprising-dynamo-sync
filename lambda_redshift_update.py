@@ -14,6 +14,7 @@ import logging
 import os
 import projects_database as db
 import base64
+import sqs_send
 
 logger = logging.getLogger()
 logger.setLevel(os.getenv('LOGGING_LEVEL', 'DEBUG'))
@@ -25,6 +26,7 @@ cluster = os.getenv('redshift_cluster', None)
 port = os.getenv('redshift_port')
 endpoint = os.getenv('redshift_url')
 
+dlq_sqs_queue_name = os.getenv('redshiftSyncDLQName', 'DynamoRedshiftSyncQueueDeadLetter')
 
 def parse_record(record):
 
@@ -65,11 +67,19 @@ def update_batch(records):
     conn = None
 
     try:
-        conn = db.open_database(user, pwd, database, cluster, port, endpoint)
-
+        conn = db.open_database(user, pwd, database, cluster, port, endpoint)        
         logger.debug("perfrming batch update.")
         db.sync_batch(conn, records)
+    except Exception as e:
+        error_message = str(e)
+        
+        logger.exception("Error sycning batch.  Sending batch to DLQ: %s" % dlq_sqs_queue_name)
 
+        error_payload = {
+            "error_message": error_message,
+            "data": records
+        }
+        sqs_send.send_message(error_payload, dlq_sqs_queue_name)
     finally:
         if conn:
             db.close_database(conn)

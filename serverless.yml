@@ -27,6 +27,7 @@ provider:
     sqs_queue_projects: DynamoRedshiftSyncQueue
     kinesis_queue_projects: ProjectsDynamoDBRedshiftSync
     batch_size: ${self:custom.kinesis.batchSize}
+    redshiftSyncDLQName: ${self:custom.kinesis.redshiftSyncDLQName}
 
 # you can add statements to the Lambda function's IAM Role here
   iamRoleStatements:
@@ -168,7 +169,7 @@ resources:
     RedshiftSyncSQSDeadLetter:
       Type: "AWS::SQS::Queue"
       Properties:
-        QueueName: "DynamoRedshiftSyncQueueDeadLetter"
+        QueueName: ${self:custom.kinesis.redshiftSyncDLQName}
 
     ProjectsDynamoTable:
       Type: AWS::DynamoDB::Table
@@ -194,3 +195,4 @@ custom:
     dockerizePip: true
   kinesis:
     batchSize: 100
+    redshiftSyncDLQName: DynamoRedshiftSyncQueueDeadLetter

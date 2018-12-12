@@ -78,7 +78,7 @@ SET
   ,page_count=imp.page_count
   ,photo_boxes=imp.photo_boxes
   ,photo_boxes_complete=imp.photo_boxes_complete
-  ,gallery_images_uploaded=imp.gallery_images_uploaded
+--   ,gallery_images_uploaded=imp.gallery_images_uploaded
   ,product_attributes=imp.product_attributes
   ,price=imp.price
 FROM (
@@ -110,7 +110,7 @@ INSERT INTO data_warehouse.project_data
 ,page_count
 ,photo_boxes
 ,photo_boxes_complete
-,gallery_images_uploaded
+-- ,gallery_images_uploaded
 ,product_attributes
 ,price
 )
@@ -137,7 +137,7 @@ project_id
 ,page_count
 ,photo_boxes
 ,photo_boxes_complete
-,gallery_images_uploaded
+-- ,gallery_images_uploaded
 ,product_attributes
 ,price
 FROM projects imp
